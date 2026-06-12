@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Habit Garden</title>
+<style>
+  :root {
+    --paper: #F7F4ED;
+    --ink: #2E2A22;
+    --ink-soft: #8A8377;
+    --sage: #7C9070;
+    --terracotta: #C46B4F;
+    --line: #E3DDD1;
+    --card: #FFFFFF;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 32px 16px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .container { width: 100%; max-width: 460px; }
+
+  header { margin-bottom: 28px; text-align: center; }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+
+  .subtitle {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+
+  .add-form { display: flex; gap: 8px; margin-bottom: 24px; }
+
+  .hero-art {
+    margin-bottom: 24px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--card);
+    border: 1px solid var(--line);
+  }
+
+  .add-form input {
+    flex: 1;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font-size: 15px;
+    font-family: inherit;
+    background: var(--card);
+    color: var(--ink);
+  }
+
+  .add-form input:focus { outline: none; border-color: var(--sage); }
+  .add-form input::placeholder { color: var(--ink-soft); }
+
+  .add-form button {
+    padding: 12px 18px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: background 0.15s;
+  }
+
+  .add-form button:hover { background: var(--sage); }
+
+  .habit {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+
+  .habit-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+    gap: 8px;
+  }
+
+  .habit-name {
+    font-size: 18px;
+    font-weight: 400;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .habit-meta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+  .streak {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--terracotta);
+    white-space: nowrap;
+  }
+
+  .streak.zero { color: var(--ink-soft); }
+
+  .delete-btn {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.15s;
+  }
+
+  .delete-btn:hover { color: var(--terracotta); }
+
+  .days { display: flex; gap: 8px; }
+
+  .day-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .day-label {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+  }
+
+  .day-label.today { color: var(--terracotta); font-weight: bold; }
+
+  .day {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: var(--paper);
+  }
+
+  .day:hover { border-color: var(--sage); }
+  .day.done { background: var(--sage); border-color: var(--sage); }
+  .day.today:not(.done) { border-color: var(--terracotta); border-style: dashed; }
+
+  .empty {
+    text-align: center;
+    color: var(--ink-soft);
+    margin-top: 60px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .empty .big { font-size: 32px; margin-bottom: 10px; opacity: 0.4; }
+
+  .motivation {
+    margin-top: 32px;
+    padding: 20px;
+    text-align: center;
+    border-top: 1px solid var(--line);
+  }
+
+  .motivation .quote {
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+
+  .motivation .label {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--sage);
+    margin-top: 10px;
+  }
+
+  @media (max-width: 360px) {
+    .day { width: 28px; height: 28px; }
+    .habit-name { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Habit Garden</h1>
+    <div class="subtitle">tend something daily</div>
+  </header>
+
+  <div class="hero-art">
+    <svg width="100%" viewBox="0 0 460 140" xmlns="http://www.w3.org/2000/svg" role="img">
+      <title>Botanical illustration of plants in pots</title>
+      <rect width="460" height="140" fill="#F7F4ED"/>
+      <line x1="0" y1="120" x2="460" y2="120" stroke="#E3DDD1" stroke-width="1"/>
+
+      <!-- Pot 1 -->
+      <path d="M60 95 L80 95 L75 125 L65 125 Z" fill="#C46B4F"/>
+      <line x1="70" y1="95" x2="70" y2="60" stroke="#7C9070" stroke-width="2"/>
+      <ellipse cx="70" cy="55" rx="14" ry="20" fill="#7C9070"/>
+      <ellipse cx="58" cy="68" rx="10" ry="15" fill="#9CB18F" transform="rotate(-30 58 68)"/>
+      <ellipse cx="82" cy="68" rx="10" ry="15" fill="#9CB18F" transform="rotate(30 82 68)"/>
+
+      <!-- Pot 2 (tall) -->
+      <path d="M180 90 L210 90 L203 125 L187 125 Z" fill="#E3DDD1"/>
+      <line x1="195" y1="90" x2="195" y2="40" stroke="#7C9070" stroke-width="2"/>
+      <line x1="195" y1="60" x2="180" y2="45" stroke="#7C9070" stroke-width="2"/>
+      <line x1="195" y1="70" x2="212" y2="55" stroke="#7C9070" stroke-width="2"/>
+      <circle cx="195" cy="40" r="6" fill="#C46B4F"/>
+      <circle cx="180" cy="45" r="5" fill="#9CB18F"/>
+      <circle cx="212" cy="55" r="5" fill="#9CB18F"/>
+
+      <!-- Pot 3 (small succulent) -->
+      <path d="M280 100 L305 100 L300 125 L285 125 Z" fill="#C46B4F"/>
+      <path d="M292 100 C292 80 275 75 280 60 C290 75 295 80 292 100 Z" fill="#7C9070"/>
+      <path d="M292 100 C292 85 305 78 302 65 C310 80 300 88 292 100 Z" fill="#9CB18F"/>
+      <path d="M292 100 C292 88 282 82 285 70 C295 82 295 90 292 100 Z" fill="#7C9070"/>
+
+      <!-- Pot 4 (wide leafy) -->
+      <path d="M340 92 L390 92 L382 125 L348 125 Z" fill="#E3DDD1"/>
+      <ellipse cx="365" cy="75" rx="28" ry="18" fill="#7C9070" transform="rotate(-10 365 75)"/>
+      <ellipse cx="365" cy="75" rx="22" ry="13" fill="#9CB18F" transform="rotate(-10 365 75)"/>
+      <line x1="365" y1="92" x2="365" y2="78" stroke="#7C9070" stroke-width="2"/>
+
+      <!-- small dots / soil texture -->
+      <circle cx="70" cy="98" r="1.5" fill="#8A8377"/>
+      <circle cx="65" cy="100" r="1" fill="#8A8377"/>
+      <circle cx="195" cy="92" r="1.5" fill="#8A8377"/>
+      <circle cx="365" cy="95" r="1.5" fill="#8A8377"/>
+    </svg>
+  </div>
+
+
+  <div class="add-form">
+    <input type="text" id="habitInput" placeholder="Add a new habit...">
+    <button onclick="addHabit()">Plant</button>
+  </div>
+
+  <div id="habitList"></div>
+  <div class="empty" id="emptyMsg">
+    <div class="big">○</div>
+    Nothing planted yet.<br>Add a habit above to begin.
+  </div>
+
+  <div class="motivation" id="motivation"></div>
+</div>
+
+<script>
+  const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  const QUOTES = [
+    "Small steps, repeated daily, become unstoppable.",
+    "You don't have to be perfect. You just have to show up.",
+    "Every day is a fresh seed for tomorrow's growth.",
+    "Consistency is quieter than motivation, but it lasts longer.",
+    "The habit you do today is the person you become tomorrow.",
+    "Progress, not perfection.",
+    "One day at a time builds a lifetime.",
+    "What you repeat, you become.",
+    "Your future self is watching what you do right now.",
+    "Discipline is choosing what you want most over what you want now."
+  ];
+
+  function getTodayKey() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  function getWeekDates() {
+    const today = new Date();
+    const dayIndex = (today.getDay() + 6) % 7;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - dayIndex);
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+    return dates;
+  }
+
+  function loadHabits() {
+    return JSON.parse(localStorage.getItem('habits') || '[]');
+  }
+
+  function saveHabits(habits) {
+    localStorage.setItem('habits', JSON.stringify(habits));
+  }
+
+  function addHabit() {
+    const input = document.getElementById('habitInput');
+    const name = input.value.trim();
+    if (!name) return;
+    const habits = loadHabits();
+    habits.push({ id: Date.now(), name: name, completed: {} });
+    saveHabits(habits);
+    input.value = '';
+    render();
+  }
+
+  function toggleDay(habitId, dateKey) {
+    const habits = loadHabits();
+    const habit = habits.find(h => h.id === habitId);
+    habit.completed[dateKey] = !habit.completed[dateKey];
+    saveHabits(habits);
+    render();
+  }
+
+  function deleteHabit(habitId) {
+    let habits = loadHabits();
+    habits = habits.filter(h => h.id !== habitId);
+    saveHabits(habits);
+    render();
+  }
+
+  function calcStreak(habit) {
+    let streak = 0;
+    let d = new Date();
+    while (true) {
+      const key = d.toISOString().split('T')[0];
+      if (habit.completed[key]) {
+        streak++;
+        d.setDate(d.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  function render() {
+    const habits = loadHabits();
+    const list = document.getElementById('habitList');
+    const emptyMsg = document.getElementById('emptyMsg');
+    list.innerHTML = '';
+
+    if (habits.length === 0) {
+      emptyMsg.style.display = 'block';
+      return;
+    }
+    emptyMsg.style.display = 'none';
+
+    const weekDates = getWeekDates();
+    const todayKey = getTodayKey();
+
+    habits.forEach(habit => {
+      const div = document.createElement('div');
+      div.className = 'habit';
+
+      const streak = calcStreak(habit);
+      const streakClass = streak > 0 ? 'streak' : 'streak zero';
+      const streakText = streak > 0
+        ? '● ' + streak + (streak === 1 ? ' DAY' : ' DAYS')
+        : 'NO STREAK';
+
+      let daysHtml = '<div class="days">';
+      weekDates.forEach((dateKey, i) => {
+        const done = habit.completed[dateKey] ? 'done' : '';
+        const isToday = dateKey === todayKey ? 'today' : '';
+        daysHtml += `
+          <div class="day-col">
+            <span class="day-label ${isToday}">${DAY_NAMES[i]}</span>
+            <div class="day ${done} ${isToday}" onclick="toggleDay(${habit.id}, '${dateKey}')"></div>
+          </div>`;
+      });
+      daysHtml += '</div>';
+
+      div.innerHTML = `
+        <div class="habit-top">
+          <span class="habit-name">${habit.name}</span>
+          <div class="habit-meta">
+            <span class="${streakClass}">${streakText}</span>
+            <button class="delete-btn" onclick="deleteHabit(${habit.id})" title="Delete">×</button>
+          </div>
+        </div>
+        ${daysHtml}
+      `;
+      list.appendChild(div);
+    });
+
+    renderMotivation(habits);
+  }
+
+  function renderMotivation(habits) {
+    const motivation = document.getElementById('motivation');
+    if (habits.length === 0) {
+      motivation.innerHTML = '';
+      return;
+    }
+
+    const bestStreak = Math.max(...habits.map(calcStreak));
+    let label;
+    if (bestStreak === 0) label = "today is day one";
+    else if (bestStreak < 3) label = "best streak: " + bestStreak + " day" + (bestStreak > 1 ? "s" : "");
+    else if (bestStreak < 7) label = "🔥 best streak: " + bestStreak + " days — keep going";
+    else if (bestStreak < 30) label = "🔥 " + bestStreak + " days strong — this is becoming who you are";
+    else label = "🌳 " + bestStreak + " days — fully rooted habit";
+
+    const dayIndex = new Date().getDate() % QUOTES.length;
+    const quote = QUOTES[dayIndex];
+
+    motivation.innerHTML = `
+      <div class="quote">"${quote}"</div>
+      <div class="label">${label}</div>
+    `;
+  }
+
+  document.getElementById('habitInput').addEventListener('keypress', e => {
+    if (e.key === 'Enter') addHabit();
+  });
+
+  render();
+</script>
+</body>
+</html>
